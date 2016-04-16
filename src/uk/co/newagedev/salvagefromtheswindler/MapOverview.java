@@ -9,7 +9,7 @@ import uk.co.newagedev.jnade.util.Location;
 public class MapOverview extends Map {
 	
 	private Location[] mapPoints = new Location[] {new Location(100, 100), new Location(200, 200), new Location(300, 300), new Location(400, 400), new Location(250, 360)};
-	private Player player = new Player(mapPoints[0].clone());
+	private Player player = new Player(mapPoints[0].clone(), false);
 	private boolean notMoving = true;
 	
 	public void movePlayerLeft() {
