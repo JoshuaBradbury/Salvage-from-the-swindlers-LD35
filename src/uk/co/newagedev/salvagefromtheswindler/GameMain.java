@@ -1,14 +1,14 @@
 package uk.co.newagedev.salvagefromtheswindler;
 
 import java.awt.Color;
-import java.awt.event.KeyEvent;
 
 import uk.co.newagedev.jnade.Game;
 import uk.co.newagedev.jnade.Main;
-import uk.co.newagedev.jnade.graphics.AnimatedSprite;
-import uk.co.newagedev.jnade.graphics.Sprite;
 import uk.co.newagedev.jnade.input.KeyBinding;
 import uk.co.newagedev.jnade.map.Map;
+import uk.co.newagedev.jnade.openglgraphics.AnimatedSprite;
+import uk.co.newagedev.jnade.openglgraphics.SpriteRegistry;
+import uk.co.newagedev.jnade.util.Vector2f;
 
 public class GameMain implements Game {
 
@@ -35,6 +35,9 @@ public class GameMain implements Game {
 		currentMapIndex = i;
 		//AudioClip clip = Main.AUDIO_REGISTRY.getAudioClip("bg-level");
 		switch (i) {
+		case -2:
+			currentMap = new MainMenu();
+			break;
 		case -1:
 			currentMap = new MapOverview();
 			//if (clip.isPlaying()) clip.stop();
@@ -49,31 +52,30 @@ public class GameMain implements Game {
 	}
 
 	public void init() {
-		KeyBinding.bindKey("exit", KeyEvent.VK_ESCAPE);
+		KeyBinding.bindKey("exit", KeyBinding.KEY_ESCAPE);
 		
-		KeyBinding.bindKey("playerLeft", KeyEvent.VK_LEFT);
-		KeyBinding.bindKey("playerRight", KeyEvent.VK_RIGHT);
-		KeyBinding.bindKey("playerJump", KeyEvent.VK_SPACE);
-		KeyBinding.bindKey("playerClimbUp", KeyEvent.VK_UP);
-		KeyBinding.bindKey("playerClimbDown", KeyEvent.VK_DOWN);
-		KeyBinding.bindKey("playerAction", KeyEvent.VK_ENTER);
-		KeyBinding.bindKey("playerTransform", KeyEvent.VK_CONTROL);
+		KeyBinding.bindKey("playerLeft", KeyBinding.KEY_LEFT);
+		KeyBinding.bindKey("playerRight", KeyBinding.KEY_RIGHT);
+		KeyBinding.bindKey("playerClimbUp", KeyBinding.KEY_UP);
+		KeyBinding.bindKey("playerClimbDown", KeyBinding.KEY_DOWN);
+		KeyBinding.bindKey("playerAction", KeyBinding.KEY_ENTER);
+		KeyBinding.bindKey("playerTransform", KeyBinding.KEY_LEFT_CONTROL);
 		
 		//Main.AUDIO_REGISTRY.registerAudioClip("bg-level", new File("audio/bg-level.wav"));
 		
-		Main.RENDERABLE_REGISTRY.setRemoveColour(new Color(0xFF00DC));
+		SpriteRegistry.registerSprite("sea", new AnimatedSprite("res/images/sea/", "sea", 12));
+		SpriteRegistry.registerSprite("rough-sea", new AnimatedSprite("res/images/sea/", "rough-sea", 3));
+		SpriteRegistry.registerSprite("white-cloud", Main.getScreen().loadImageFromFile("res/images/clouds.png"));
+		SpriteRegistry.registerSprite("dark-cloud", Main.getScreen().loadImageFromFile("res/images/dark clouds.png"));
 		
-		Main.RENDERABLE_REGISTRY.registerRenderable("sea", new AnimatedSprite("res/images/sea.png", 12, 1, 20));
-		Main.RENDERABLE_REGISTRY.registerRenderable("white-cloud", new Sprite("res/images/clouds.png"));
+		SpriteRegistry.registerSprite("palm-tree", Main.getScreen().loadImageFromFile("res/images/palmTree.png"));
 		
-		Main.RENDERABLE_REGISTRY.registerRenderable("palm-tree", new Sprite("res/images/palmTree.png"));
-		
-		swapToMap(-1);
+		swapToMap(0);
 	}
 
 	public void update() {
 		currentMap.update();
-		if (KeyBinding.isKeyReleasing("exit")) {
+		if (KeyBinding.isBindingReleasing("exit")) {
 			if (currentMapIndex == -1) {
 				main.stop();
 			} else {
@@ -84,5 +86,9 @@ public class GameMain implements Game {
 
 	public void render() {
 		currentMap.render();
+		Main.getScreen().renderSpriteIgnoringCamera("playerNormalWalk3", new Vector2f(100, 0));
+		Main.getScreen().renderSpriteIgnoringCamera("playerNormalWalk2", new Vector2f(200, 0));
+		Main.getScreen().renderSpriteIgnoringCamera("playerNormalWalk1", new Vector2f(300, 0));
+		Main.getScreen().renderSpriteIgnoringCamera("playerNormalWalk0", new Vector2f(400, 0));
 	}
 }

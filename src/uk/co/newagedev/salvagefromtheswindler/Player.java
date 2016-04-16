@@ -1,36 +1,35 @@
 package uk.co.newagedev.salvagefromtheswindler;
 
 import uk.co.newagedev.jnade.Main;
-import uk.co.newagedev.jnade.graphics.AnimatedSprite;
 import uk.co.newagedev.jnade.input.KeyBinding;
 import uk.co.newagedev.jnade.map.MapCustom;
-import uk.co.newagedev.jnade.util.Location;
+import uk.co.newagedev.jnade.openglgraphics.AnimatedSprite;
+import uk.co.newagedev.jnade.openglgraphics.Sprite;
+import uk.co.newagedev.jnade.util.Vector2f;
 
 public class Player extends MapCustom {
 
-	private boolean level, shapeShifting;
+	private boolean shapeShifting;
 	private ShapeShift shape = ShapeShift.NORMAL;
 	private int walking = 0, climbing = 0;
+	private MapLevel level;
 
-	private AnimatedSprite normalWalk = new AnimatedSprite("res/images/normal.png", 16, 2, 0, 3);
-	private AnimatedSprite moleWalk = new AnimatedSprite("res/images/mole.png", 16, 2, 0, 3);
-	private AnimatedSprite alligatorWalk = new AnimatedSprite("res/images/alligator.png", 16, 2, 0, 3);
-	private AnimatedSprite angelWalk = new AnimatedSprite("res/images/angel.png", 16, 2, 0, 3);
-	private AnimatedSprite squirrelWalk = new AnimatedSprite("res/images/squirrel.png", 16, 2, 0, 3);
+	private AnimatedSprite normalWalk = new AnimatedSprite("res/images/normal/", "playerNormalWalk", 10, 0, 3);
+	private AnimatedSprite moleWalk = new AnimatedSprite("res/images/mole/", "playerMoleWalk", 0, 3);
+	private AnimatedSprite alligatorWalk = new AnimatedSprite("res/images/alligator/", "playerAlligatorWalk", 0, 3);
+	private AnimatedSprite angelWalk = new AnimatedSprite("res/images/angel/", "playerAngelWalk", 0, 3);
+	private AnimatedSprite squirrelWalk = new AnimatedSprite("res/images/squirrel/", "playerSquirrelWalk", 0, 3);
 
-	private AnimatedSprite normalShapeShift = new AnimatedSprite("res/images/normal.png", 16, 2, 4, 19);
-	private AnimatedSprite moleShapeShift = new AnimatedSprite("res/images/mole.png", 16, 2, 4, 19);
-	private AnimatedSprite alligatorShapeShift = new AnimatedSprite("res/images/alligator.png", 16, 2, 4, 19);
-	private AnimatedSprite angelShapeShift = new AnimatedSprite("res/images/angel.png", 16, 2, 4, 19);
-	private AnimatedSprite squirrelShapeShift = new AnimatedSprite("res/images/squirrel.png", 16, 2, 4, 19);
+	private AnimatedSprite normalShapeShift = new AnimatedSprite("res/images/normal/", "playerNormalTransfom", 4, 19);
+	private AnimatedSprite moleShapeShift = new AnimatedSprite("res/images/mole/", "playerMoleTransfom", 4, 19);
+	private AnimatedSprite alligatorShapeShift = new AnimatedSprite("res/images/alligator/", "playerAlligatorTransfom", 4, 19);
+	private AnimatedSprite angelShapeShift = new AnimatedSprite("res/images/angel/", "playerAngelTransfom", 4, 19);
+	private AnimatedSprite squirrelShapeShift = new AnimatedSprite("res/images/squirrel/", "playerSquirrelTransfom", 4, 19);
 
-	public Player(Location loc, boolean level) {
+	public Player(Vector2f loc, MapLevel level) {
 		super(loc);
 		this.level = level;
-	}
-
-	public Player(Location loc) {
-		this(loc, true);
+		normalWalk.start();
 	}
 
 	public void setWalkingDirection(int dir) {
@@ -59,7 +58,7 @@ public class Player extends MapCustom {
 					break;
 				case NORMAL:
 					normalWalk.setFlipX(true);
-					normalWalk.nextFrame();
+					//normalWalk.nextFrame();
 					break;
 				case SQUIRREL:
 					squirrelWalk.setFlipX(true);
@@ -88,7 +87,7 @@ public class Player extends MapCustom {
 					break;
 				case NORMAL:
 					normalWalk.setFlipX(false);
-					normalWalk.nextFrame();
+					//normalWalk.nextFrame();
 					break;
 				case SQUIRREL:
 					squirrelWalk.setFlipX(false);
@@ -97,11 +96,15 @@ public class Player extends MapCustom {
 					break;
 				}
 			}
-		} else {
-			normalWalk.setFrame(0);
 		}
-		if (level) {
-			if (!shapeShifting && KeyBinding.isKeyReleasing("playerTransform")) {
+		if (level != null) {
+			if (climbing == 0 && KeyBinding.isBindingDown("playerClimbUp")) {
+				climbing = 1;
+			} else if (climbing == -1 && KeyBinding.isBindingDown("playerClimbDown")) {
+				
+			}
+			
+			if (!shapeShifting && KeyBinding.isBindingReleasing("playerTransform")) {
 				count = 0;
 				shapeShifting = true;
 				walking = 0;
@@ -174,13 +177,31 @@ public class Player extends MapCustom {
 					count = 0;
 				}
 			} else {
-				boolean left = KeyBinding.isKeyDown("playerLeft"), right = KeyBinding.isKeyDown("playerRight");
+				boolean left = KeyBinding.isBindingDown("playerLeft"), right = KeyBinding.isBindingDown("playerRight");
 				if (left && !right) {
 					getLocation().x -= 1;
 					walking = -1;
+
+					if (getLocation().x < -16) {
+						if (!level.isFirstSection()) {
+							level.prevSection();
+							getLocation().x = 624;
+						} else {
+							getLocation().x += 1;
+						}
+					}
 				} else if (right && !left) {
 					getLocation().x += 1;
 					walking = 1;
+
+					if (getLocation().x > 624) {
+						if (!level.isLastSection()) {
+							level.nextSection();
+							getLocation().x = -16;
+						} else {
+							getLocation().x -= 1;
+						}
+					}
 				} else {
 					walking = 0;
 				}
@@ -188,43 +209,43 @@ public class Player extends MapCustom {
 		}
 	}
 
-	public int[] getCurrentPixels() {
+	public Sprite getCurrentSprite() {
 		if (shapeShifting) {
 			switch (shape) {
 			case ALLIGATOR:
-				return alligatorShapeShift.getPixels();
+				return alligatorShapeShift.getSprite();
 			case ANGEL:
-				return angelShapeShift.getPixels();
+				return angelShapeShift.getSprite();
 			case MOLE:
-				return moleShapeShift.getPixels();
+				return moleShapeShift.getSprite();
 			case NORMAL:
-				return normalShapeShift.getPixels();
+				return normalShapeShift.getSprite();
 			case SQUIRREL:
-				return squirrelShapeShift.getPixels();
+				return squirrelShapeShift.getSprite();
 			default:
 				break;
 			}
 		} else {
 			switch (shape) {
 			case ALLIGATOR:
-				return alligatorWalk.getPixels();
+				return alligatorWalk.getSprite();
 			case ANGEL:
-				return angelWalk.getPixels();
+				return angelWalk.getSprite();
 			case MOLE:
-				return moleWalk.getPixels();
+				return moleWalk.getSprite();
 			case NORMAL:
-				return normalWalk.getPixels();
+				return normalWalk.getSprite();
 			case SQUIRREL:
-				return squirrelWalk.getPixels();
+				return squirrelWalk.getSprite();
 			default:
 				break;
 			}
 		}
-		return new int[0];
+		return null;
 	}
 
 	@Override
 	public void render() {
-		Main.screen.renderImage(getLocation().x, getLocation().y, 32, 32, getCurrentPixels());
+		Main.getScreen().renderSpriteIgnoringCamera(getCurrentSprite().getName(), getLocation());
 	}
 }
